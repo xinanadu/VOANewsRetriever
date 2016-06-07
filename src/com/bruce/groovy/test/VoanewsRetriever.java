@@ -5,7 +5,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
@@ -19,9 +20,10 @@ public class VoanewsRetriever {
     private final String PREFIX = "http://www.voanews.com";
     private final String CHARSET = "UTF-8";
     private String today;
-    private File dirToday;
     private PrintWriter writer;
-    private String ARTICLE_ID_PREFIX = "BRUCE_NEW_ARTICLE_ID_";
+    private final String ARTICLE_ID_PREFIX = "BRUCE_NEW_ARTICLE_ID_";
+    private final String WROK_DIRECTORY = "D:\\Bruce\\news\\";
+    private final String TEMP_ARTILES_FILE = "D:\\Bruce\\news\\temp.html";
     private List<NewsArticle> listNews = new ArrayList<NewsArticle>();
 
     private Document getJsonDocument(String url, String charset) {
@@ -43,13 +45,15 @@ public class VoanewsRetriever {
         Document docHome = getJsonDocument("http://www.voanews.com", CHARSET);
         if (docHome == null) return;
 
-        readCatalogues(docHome);
+        readCataloguesAndList(docHome);
 
         try {
-            dirToday = new File("D:\\Bruce\\news\\VOANews_" + today);
-            if (!dirToday.exists()) dirToday.mkdir();
+            writer = new PrintWriter(TEMP_ARTILES_FILE, "UTF-8");
+            readAndWriteArticles();
+            writer.close();
 
-            writer = new PrintWriter(dirToday.getAbsolutePath() + "\\VOANews_" + today + ".html", "UTF-8");
+
+            writer = new PrintWriter(WROK_DIRECTORY + "VOANews_" + today + ".html", "UTF-8");
             writer.append("<!DOCTYPE html>");
             writer.append("<html>");
             writer.append("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
@@ -66,7 +70,9 @@ public class VoanewsRetriever {
 
             writeCatalogues();
 
-            readAndWriteArticles();
+            writer.append("</div>");
+
+            copyArticles();
 
             writer.append("</body>");
             writer.append("</html>");
@@ -78,20 +84,20 @@ public class VoanewsRetriever {
         System.out.println("spent time: " + (System.currentTimeMillis() - timeBegin));
     }
 
-    private void readCatalogues(Document docHome) {
+    private void readCataloguesAndList(Document docHome) {
         Elements navLinks = docHome.select("a.nav_link");
         for (Element eleCatalogueNav : navLinks) {
             System.out.println("readCatalogue: " + eleCatalogueNav.html());
             try {
                 long beginTime = System.currentTimeMillis();
                 Document doc = getJsonDocument((PREFIX + eleCatalogueNav.attr("href")), CHARSET);
-                System.out.println("getting document spent time: " + (System.currentTimeMillis() - beginTime));
+                System.out.println("getting time: " + (System.currentTimeMillis() - beginTime));
                 beginTime = System.currentTimeMillis();
                 if (doc == null) return;
 
                 int countListNews = listNews.size();
                 Elements links = doc.select("a");
-                System.out.println("parsing document spent time: " + (System.currentTimeMillis() - beginTime));
+                System.out.println("parsing time: " + (System.currentTimeMillis() - beginTime));
                 String tempHref = "";
                 for (Element ele : links) {
                     if (ele.attr("href").contains("/content/")) {
@@ -112,23 +118,23 @@ public class VoanewsRetriever {
     }
 
     private void writeCatalogues() {
-        String tempCatalgue = null;
+        String tempCatalogue = null;
         for (int i = 0; i < listNews.size(); i++) {
             System.out.print(".");
             NewsArticle article = listNews.get(i);
-            if (!article.catalogue.equals(tempCatalgue)) {
-                if (tempCatalgue != null)
+            if (!article.catalogue.equals(tempCatalogue)) {
+                if (tempCatalogue != null)
                     writer.append("</ul>");
 
-                tempCatalgue = article.catalogue;
-                writer.append("<h2>" + tempCatalgue + "</h2>");
+                tempCatalogue = article.catalogue;
+                writer.append("<h2>" + tempCatalogue + "</h2>");
                 writer.append("<ul>");
             }
 
-            writer.append("<li><a href=\"#" + (ARTICLE_ID_PREFIX + i) + "\">" + article.href + "</a></li>");
+            writer.append("<li><a href=\"#" + (ARTICLE_ID_PREFIX + i) + "\">" + article.title + "</a></li>");
 
         }
-        if (tempCatalgue != null)
+        if (tempCatalogue != null)
             writer.append("</ul>");
 
         System.out.println();
@@ -137,7 +143,7 @@ public class VoanewsRetriever {
     private void readAndWriteArticles() {
         for (int i = 0; i < listNews.size(); i++) {
             NewsArticle article = listNews.get(i);
-            System.out.println("readAndWriteArticle: " + article.href);
+            System.out.println(i + "/" + listNews.size() + " readAndWriteArticle: " + article.href);
 
             int countException = 0;
             boolean done = false;
@@ -145,10 +151,15 @@ public class VoanewsRetriever {
                 if (countException > 0)
                     System.err.println("  try " + (countException + 1) + " times");
                 try {
+                    long beginTime = System.currentTimeMillis();
                     Document docNewsArticle = getJsonDocument(PREFIX + article.href, CHARSET);
+                    System.out.println("ETA(s): " + ((listNews.size() - i) * (System.currentTimeMillis() - beginTime) / 1000));
+
                     if (docNewsArticle == null) return;
 
                     Elements eleTitle = docNewsArticle.select("title");
+                    article.title = eleTitle.html();
+                    listNews.set(i, article);
 
                     writer.append("<h3 id=\"" + (ARTICLE_ID_PREFIX + i) + "\">" + eleTitle.html() + "</h3>");
                     Elements eleParagraphs = docNewsArticle.select("div.zoomMe p");
@@ -166,11 +177,26 @@ public class VoanewsRetriever {
         }
     }
 
+    private void copyArticles() {
+        try {
+            FileReader fileReader =
+                    new FileReader(TEMP_ARTILES_FILE);
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader =
+                    new BufferedReader(fileReader);
+            String line = null;
+            while ((line = bufferedReader.readLine()) != null) {
+                writer.append(line);
+            }
+            // Always close files.
+            bufferedReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         new VoanewsRetriever().run();
-
-//        new VoanewsRetriever().getJsonDocument("http://blogs.voanews.com/us-opinion/", "utf-8");
-
     }
 
 }
