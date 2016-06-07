@@ -70,7 +70,7 @@ public class VoanewsRetriever {
             PrintWriter writer = new PrintWriter(dirToday.getAbsolutePath() + "\\VOANews_" + today + "_" + titleCatelogue + ".html", "UTF-8");
             writer.append("<!DOCTYPE html>");
             writer.append("<html>");
-            writer.append("<meta charset=\"UTF-8\">");
+            writer.append("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
             writer.append("<head>");
             writer.append("<title>" + today + "</title>");
             writer.append("</head>");
