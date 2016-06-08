@@ -62,6 +62,10 @@ public class VoanewsRetriever {
             writer.append("<style>");
             writer.append("#catalogue ul li{");
             writer.append("line-height:2em;");
+            writer.append("list-style-type: decimal-leading-zero;");
+            writer.append("}");
+            writer.append("#catalogue ul li a:link{");
+            writer.append("text-decoration: none;");
             writer.append("}");
             writer.append("</style>");
             writer.append("</head>");
@@ -153,7 +157,8 @@ public class VoanewsRetriever {
                 try {
                     long beginTime = System.currentTimeMillis();
                     Document docNewsArticle = getJsonDocument(PREFIX + article.href, CHARSET);
-                    System.out.println("ETA(s): " + ((listNews.size() - i) * (System.currentTimeMillis() - beginTime) / 1000));
+                    int etaSeconds = (int) ((listNews.size() - i) * (System.currentTimeMillis() - beginTime) / 1000);
+                    System.out.println("ETA: " + (etaSeconds / 60) + "m" + etaSeconds % 60 + "s");
 
                     if (docNewsArticle == null) return;
 
@@ -167,6 +172,7 @@ public class VoanewsRetriever {
                         String paragraph = "<p>" + ele.html() + "</p>";
                         writer.append(paragraph);
                     }
+                    writer.append("<a href=\"#\" onclick=\"history.go(-1)\">back to list</a>");
                     writer.append("<hr />");
                     done = true;
                 } catch (Exception e) {
