@@ -85,7 +85,8 @@ public class VoanewsRetriever {
             e.printStackTrace();
         }
 
-        System.out.println("spent time: " + (System.currentTimeMillis() - timeBegin));
+        long interval = (System.currentTimeMillis() - timeBegin) / 1000;
+        System.out.println("spent time: " + (interval / 60) + "m" + (interval % 60) + "s");
     }
 
     private void readCataloguesAndList(Document docHome) {
