@@ -95,7 +95,12 @@ public class VoanewsRetriever {
             System.out.println("readCatalogue: " + eleCatalogueNav.html());
             try {
                 long beginTime = System.currentTimeMillis();
-                Document doc = getJsonDocument((PREFIX + eleCatalogueNav.attr("href")), CHARSET);
+                Document doc = null;
+                if (eleCatalogueNav.attr("href").startsWith("http")) {
+                    doc = getJsonDocument(eleCatalogueNav.attr("href"), CHARSET);
+                } else {
+                    doc = getJsonDocument((PREFIX + eleCatalogueNav.attr("href")), CHARSET);
+                }
                 System.out.println("getting time: " + (System.currentTimeMillis() - beginTime));
                 beginTime = System.currentTimeMillis();
                 if (doc == null) return;
