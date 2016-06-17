@@ -136,7 +136,7 @@ public class VoanewsRetriever {
                 writer.append("<ul>");
             }
 
-            writer.append("<li><a href=\"#" + (ARTICLE_ID_PREFIX + i) + "\">" + article.title + "</a></li>");
+            writer.append("<li>" + article.title + "   <a href=\"#" + (ARTICLE_ID_PREFIX + i) + "\">view</a></li>");
 
         }
         if (tempCatalogue != null)
