@@ -96,7 +96,8 @@ public class VoanewsRetriever {
             try {
                 long beginTime = System.currentTimeMillis();
                 Document doc = null;
-                if (eleCatalogueNav.attr("href").startsWith("http")) {
+                boolean isMonday = (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
+                if (isMonday && isOpinion(eleCatalogueNav.attr("href"))) {
                     doc = getJsonDocument(eleCatalogueNav.attr("href"), CHARSET);
                 } else {
                     doc = getJsonDocument((PREFIX + eleCatalogueNav.attr("href")), CHARSET);
@@ -110,10 +111,10 @@ public class VoanewsRetriever {
                 System.out.println("parsing time: " + (System.currentTimeMillis() - beginTime));
                 String tempHref = "";
                 for (Element ele : links) {
-                    if (ele.attr("href").contains("/content/")) {
+                    if (ele.attr("href").contains("/content/") || (isMonday && isOpinionArticle(ele.attr("href")))) {
                         String href = ele.attr("href");
-                        if (href.startsWith(PREFIX))
-                            href = href.replace(PREFIX, "");
+                        if (!href.startsWith("http"))
+                            href = PREFIX + href;
                         if (!tempHref.equalsIgnoreCase(href)) {
                             listNews.add(new NewsArticle(eleCatalogueNav.html(), ele.html(), href));
                             tempHref = href;
@@ -162,7 +163,7 @@ public class VoanewsRetriever {
                     System.err.println("  try " + (countException + 1) + " times");
                 try {
                     long beginTime = System.currentTimeMillis();
-                    Document docNewsArticle = getJsonDocument(PREFIX + article.href, CHARSET);
+                    Document docNewsArticle = getJsonDocument(article.href, CHARSET);
                     int etaSeconds = (int) ((listNews.size() - i) * (System.currentTimeMillis() - beginTime) / 1000);
                     System.out.println("ETA: " + (etaSeconds / 60) + "m" + etaSeconds % 60 + "s");
 
@@ -205,6 +206,17 @@ public class VoanewsRetriever {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isOpinion(String href) {
+        return href.toLowerCase().startsWith("http://blogs.voanews.com/us-opinion");
+//        http://blogs.voanews.com/us-opinion
+    }
+
+
+    private boolean isOpinionArticle(String href) {
+        return href.toLowerCase().matches("http://blogs.voanews.com/us-opinion/[\\d]{4}/[\\d]{2}/[\\d]{2}/.*");
+//        http://blogs.voanews.com/us-opinion/2016/04/19/partners-in-global-peace/
     }
 
     public static void main(String[] args) throws Exception {
