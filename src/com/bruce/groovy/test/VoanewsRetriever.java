@@ -91,12 +91,12 @@ public class VoanewsRetriever {
 
     private void readCataloguesAndList(Document docHome) {
         Elements navLinks = docHome.select("a.nav_link");
+        boolean isMonday = (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
         for (Element eleCatalogueNav : navLinks) {
             System.out.println("readCatalogue: " + eleCatalogueNav.html());
             try {
                 long beginTime = System.currentTimeMillis();
                 Document doc = null;
-                boolean isMonday = (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
                 if (isMonday && isOpinion(eleCatalogueNav.attr("href"))) {
                     doc = getJsonDocument(eleCatalogueNav.attr("href"), CHARSET);
                 } else {
