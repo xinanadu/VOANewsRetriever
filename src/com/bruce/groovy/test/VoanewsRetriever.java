@@ -97,6 +97,10 @@ public class VoanewsRetriever {
         Elements navLinks = docHome.select("a.nav_link");
         for (Element eleCatalogueNav : navLinks) {
             System.out.println("readCatalogue: " + eleCatalogueNav.html());
+            if (eleCatalogueNav.html().trim().equalsIgnoreCase("Opinion")) {
+                System.out.println("skip and break the loop");
+                break;
+            }
             try {
                 long beginTime = System.currentTimeMillis();
                 Document doc = getJsonDocument((PREFIX + eleCatalogueNav.attr("href")), CHARSET);
