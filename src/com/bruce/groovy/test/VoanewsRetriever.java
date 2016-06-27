@@ -39,7 +39,7 @@ public class VoanewsRetriever {
     private void run() {
         long timeBegin = System.currentTimeMillis();
         Calendar cal = Calendar.getInstance();
-        today = cal.get(Calendar.YEAR) + "_" + String.format("%02d", cal.get(Calendar.MONTH) + 1) + "_" + String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
+        today = String.format("%02d", cal.get(Calendar.MONTH) + 1) + "_" + String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
 
 
         Document docHome = getJsonDocument("http://www.voanews.com", CHARSET);
@@ -53,7 +53,7 @@ public class VoanewsRetriever {
             writer.close();
 
 
-            writer = new PrintWriter(WROK_DIRECTORY + "VOANews_" + today + ".html", "UTF-8");
+            writer = new PrintWriter(WROK_DIRECTORY + "VOA_" + today + ".html", "UTF-8");
             writer.append("<!DOCTYPE html>");
             writer.append("<html>");
             writer.append("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
