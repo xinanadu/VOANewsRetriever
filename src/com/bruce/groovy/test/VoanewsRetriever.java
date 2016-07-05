@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -204,6 +205,8 @@ public class VoanewsRetriever {
             }
             // Always close files.
             bufferedReader.close();
+
+            new File(TEMP_ARTILES_FILE).delete();
         } catch (Exception e) {
             e.printStackTrace();
         }
